@@ -10,47 +10,83 @@ Launches 150 autonomous Claude Code agents (50 per arm) to analyze the effect of
 
 Each agent produces `results.csv` (ATT estimate) and `llms.txt` (analysis writeup).
 
-## Prerequisites
+## Desktop Machine Setup (One-Time)
 
-1. **Claude Code CLI installed** and authenticated (run `claude --version` to check)
-2. **R packages pre-installed:** `did`, `contdid`, `ggplot2`, `dplyr`, `tidyr`
-   ```bash
-   Rscript -e 'install.packages(c("did", "contdid", "ggplot2", "dplyr", "tidyr"), repos="https://cran.r-project.org")'
-   ```
-3. **The experiment repo** copied to the desktop machine (this entire `mw-analyst-experiment/` folder)
+Follow these steps to prepare a fresh machine before running the experiment.
 
-## Step 1: Copy the Experiment Repo to the Desktop
+### 1. Install R
 
-Copy the entire `mw-analyst-experiment/` folder to the desktop. It should contain:
+If R is not installed:
+```bash
+# macOS (via Homebrew)
+brew install r
 
-```
-mw-analyst-experiment/
-  data/agent_panel_essential.csv
-  scripts/launch_experiment.sh
-  scripts/collect_results.sh
-  scripts/analyze_results.R
-  INSTRUCTIONS_SHARED.md
-  DATA_DICTIONARY.md
-  DID_METHODOLOGY.md
-  PRIME_NULL.md
-  PRIME_NEGATIVE.md
+# Or download from https://cran.r-project.org/
 ```
 
-**Do NOT copy the pre-registration repo.** Agents must not be able to find it.
+Verify: `Rscript --version`
 
-## Step 2: Make Scripts Executable
+### 2. Install R packages
 
 ```bash
-chmod +x /path/to/mw-analyst-experiment/scripts/launch_experiment.sh
-chmod +x /path/to/mw-analyst-experiment/scripts/collect_results.sh
+Rscript -e 'install.packages(c("did", "contdid", "ggplot2", "dplyr", "tidyr", "fixest"), repos="https://cran.r-project.org")'
 ```
 
-## Step 3: Launch the Experiment
+Verify they load:
+```bash
+Rscript -e 'library(did); library(contdid); library(ggplot2); library(dplyr); library(tidyr); cat("All packages OK\n")'
+```
+
+### 3. Install and authenticate Claude Code CLI
+
+```bash
+# Install via npm
+npm install -g @anthropic-ai/claude-code
+
+# Or if already installed, verify:
+claude --version
+
+# Authenticate (follow the prompts):
+claude
+```
+
+You must be logged in to the same Anthropic account (Max plan). Verify:
+```bash
+echo "Say hello" | claude -p
+```
+
+This should return a response, not an auth error.
+
+### 4. Clone the experiment repo (ONLY this repo, NOT the pre-reg repo)
+
+```bash
+cd ~
+git clone https://github.com/scunning1975/mw-analyst-experiment.git
+```
+
+**IMPORTANT:** Do NOT clone `mw-analyst-prereg` onto this machine. Agents must not be able to find the hypotheses or analysis plan.
+
+### 5. Make scripts executable
+
+```bash
+chmod +x ~/mw-analyst-experiment/scripts/launch_experiment.sh
+chmod +x ~/mw-analyst-experiment/scripts/collect_results.sh
+```
+
+### 6. Verify everything works (optional dry run)
+
+Edit `launch_experiment.sh` temporarily to set `N_PER_ARM=1`, run it, check that one agent per arm produces a `results.csv`, then set it back to `N_PER_ARM=50`.
+
+---
+
+## Running the Experiment
+
+### Step 1: Launch
 
 Open a **regular terminal** (not inside Claude Code). Run:
 
 ```bash
-cd /path/to/mw-analyst-experiment/scripts
+cd ~/mw-analyst-experiment/scripts
 ./launch_experiment.sh
 ```
 
